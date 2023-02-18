@@ -127,6 +127,7 @@ jobs:
 
       - name: Fetch dependencies
         run: |
+          brew install pkg-config
           brew install gtkmm3
           brew install nlohmann-json
           brew install jpeg
@@ -196,7 +197,7 @@ jobs:
       - name: Setup artifact files
         run: |
           artifact_dir=build/artifactdir/abaddon-${{ matrix.buildtype }}-${GITHUB_SHA::7}
-          mkdir "${artifact_dir}"
+          mkdir -p "${artifact_dir}"
           cp "${{runner.workspace}}/build/abaddon" "${artifact_dir}/abaddon"
           cp -r "${{ github.workspace }}/res/css" "${artifact_dir}/css"
           cp -r "${{ github.workspace }}/res/res" "${artifact_dir}/res"
