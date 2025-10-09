@@ -1,0 +1,327 @@
+name: Build Debian and RPM Packages
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-debian:
+    name: Build Debian Package
+    runs-on: ubuntu-22.04
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      
+      - name: Install Debian build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            meson \
+            ninja-build \
+            pkg-config \
+            build-essential \
+            debhelper \
+            devscripts \
+            dh-make \
+            libgtkmm-3.0-dev \
+            libhandy-1-dev \
+            libcurl4-openssl-dev \
+            libssl-dev \
+            libopus-dev \
+            libopusfile-dev \
+            nlohmann-json3-dev \
+            libsqlite3-dev \
+            libsecret-1-dev \
+            libasound2-dev \
+            libpulse-dev \
+            libcairo2-dev \
+            libpango1.0-dev \
+            libglib2.0-dev \
+            git
+      
+      - name: Get version from git
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo "0.0.0")
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Package version: $VERSION"
+      
+      - name: Configure Meson
+        run: |
+          meson setup build \
+            --prefix=/usr \
+            --buildtype=release \
+            -Dstrip=true
+      
+      - name: Build application
+        run: meson compile -C build
+      
+      - name: Install to temporary directory
+        run: |
+          DESTDIR="${PWD}/debian-pkg" meson install -C build
+      
+      - name: Create Debian package structure
+        run: |
+          mkdir -p debian-pkg/DEBIAN
+          
+          # to debug if needed:
+          # g++ cmake libgtkmm-3.0-dev libcurl4-gnutls-dev libsqlite3-dev libssl-dev nlohmann-json3-dev libhandy-1-dev libsecret-1-dev libopus-dev libsodium-dev libspdlog-dev
+          # Create control file
+          cat > debian-pkg/DEBIAN/control << EOF
+          Package: abaddon
+          Version: ${{ steps.version.outputs.version }}
+          Section: net
+          Priority: optional
+          Architecture: amd64
+          Depends: libgtkmm-3.0-1v5, libhandy-1-0, libcurl4, libssl3 | libssl1.1, libopus0, libopusfile0, libsqlite3-0, libsecret-1-0, libasound2, libpulse0
+          Maintainer: Abaddon Fork Team <team@example.com>
+          Description: GTK-based Discord client
+           Abaddon is a Discord client written in C++ with GTK.
+           Features include:
+            - Voice and text chat support
+            - Rich media rendering
+            - Modern GTK interface
+            - Native Linux integration
+          EOF
+          
+          # Create postinst script
+          cat > debian-pkg/DEBIAN/postinst << 'EOF'
+          #!/bin/bash
+          set -e
+          if [ "$1" = "configure" ]; then
+            if command -v update-desktop-database >/dev/null 2>&1; then
+              update-desktop-database -q /usr/share/applications || true
+            fi
+            if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+              gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || true
+            fi
+          fi
+          exit 0
+          EOF
+          chmod 755 debian-pkg/DEBIAN/postinst
+          
+          # Create postrm script
+          cat > debian-pkg/DEBIAN/postrm << 'EOF'
+          #!/bin/bash
+          set -e
+          if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
+            if command -v update-desktop-database >/dev/null 2>&1; then
+              update-desktop-database -q /usr/share/applications || true
+            fi
+            if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+              gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || true
+            fi
+          fi
+          exit 0
+          EOF
+          chmod 755 debian-pkg/DEBIAN/postrm
+      
+      - name: Build Debian package
+        run: |
+          dpkg-deb --build debian-pkg abaddon_${{ steps.version.outputs.version }}_amd64.deb
+          
+      - name: Verify Debian package
+        run: |
+          dpkg-deb --info abaddon_${{ steps.version.outputs.version }}_amd64.deb
+          dpkg-deb --contents abaddon_${{ steps.version.outputs.version }}_amd64.deb
+      
+      - name: Upload Debian package
+        uses: actions/upload-artifact@v4
+        with:
+          name: debian-package
+          path: abaddon_*.deb
+          retention-days: 30
+
+  build-rpm:
+    name: Build RPM Package
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    
+    steps:
+      - name: Install RPM build dependencies
+        run: |
+          dnf install -y \
+            meson \
+            ninja-build \
+            gcc \
+            gcc-c++ \
+            pkg-config \
+            rpm-build \
+            rpmdevtools \
+            git \
+            gtkmm30-devel \
+            libhandy-devel \
+            libcurl-devel \
+            openssl-devel \
+            opus-devel \
+            opusfile-devel \
+            json-devel \
+            sqlite-devel \
+            libsecret-devel \
+            alsa-lib-devel \
+            pulseaudio-libs-devel \
+            cairo-devel \
+            pango-devel \
+            glib2-devel
+      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      
+      - name: Get version from git
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo "0.0.0")
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Package version: $VERSION"
+      
+      - name: Setup RPM build environment
+        run: |
+          rpmdev-setuptree
+          mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+      
+      - name: Create source tarball
+        run: |
+          git archive --format=tar.gz --prefix=abaddon-${{ steps.version.outputs.version }}/ \
+            -o ~/rpmbuild/SOURCES/abaddon-${{ steps.version.outputs.version }}.tar.gz HEAD
+      
+      - name: Create RPM spec file
+        run: |
+          cat > ~/rpmbuild/SPECS/abaddon.spec << 'SPECEOF'
+          Name:           abaddon
+          Version:        ${{ steps.version.outputs.version }}
+          Release:        1%{?dist}
+          Summary:        GTK-based Discord client
+          
+          License:        GPL-3.0
+          URL:            https://github.com/deskree-inc/abaddon-fork
+          Source0:        %{name}-%{version}.tar.gz
+          
+          BuildRequires:  meson >= 0.55.0
+          BuildRequires:  ninja-build
+          BuildRequires:  gcc-c++
+          BuildRequires:  pkgconfig
+          BuildRequires:  pkgconfig(gtkmm-3.0)
+          BuildRequires:  libhandy-devel
+          BuildRequires:  pkgconfig(libcurl)
+          BuildRequires:  pkgconfig(openssl)
+          BuildRequires:  pkgconfig(opus)
+          BuildRequires:  pkgconfig(opusfile)
+          BuildRequires:  pkgconfig(nlohmann_json)
+          BuildRequires:  pkgconfig(sqlite3)
+          BuildRequires:  pkgconfig(libsecret-1)
+          BuildRequires:  pkgconfig(alsa)
+          BuildRequires:  pkgconfig(libpulse)
+          BuildRequires:  git
+          
+          Requires:       gtkmm30
+          Requires:       libhandy
+          Requires:       libcurl
+          Requires:       openssl-libs
+          Requires:       opus
+          Requires:       opusfile
+          Requires:       sqlite-libs
+          Requires:       libsecret
+          Requires:       alsa-lib
+          Requires:       pulseaudio-libs
+          
+          %description
+          Abaddon is a Discord client written in C++ with GTK.
+          Features include voice and text chat support, rich media
+          rendering, modern GTK interface, and native Linux integration.
+          
+          %prep
+          %autosetup -n %{name}-%{version}
+          
+          %build
+          %meson --buildtype=release
+          %meson_build
+          
+          %install
+          %meson_install
+          
+          %post
+          /usr/bin/update-desktop-database -q /usr/share/applications || :
+          /usr/bin/gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || :
+          
+          %postun
+          /usr/bin/update-desktop-database -q /usr/share/applications || :
+          /usr/bin/gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || :
+          
+          %files
+          %{_bindir}/abaddon
+          %{_datadir}/applications/*.desktop
+          %{_datadir}/icons/hicolor/*/apps/*
+          %{_datadir}/metainfo/*.appdata.xml
+          %doc README.md
+          %license LICENSE
+          
+          %changelog
+          * $(date "+%a %b %d %Y") Automated Build <build@example.com> - ${{ steps.version.outputs.version }}-1
+          - Automated build from GitHub Actions
+          SPECEOF
+      
+      - name: Build RPM package
+        run: |
+          rpmbuild -ba ~/rpmbuild/SPECS/abaddon.spec
+      
+      - name: Copy RPM to workspace
+        run: |
+          mkdir -p rpms
+          find ~/rpmbuild/RPMS -name "*.rpm" -exec cp {} rpms/ \;
+      
+      - name: Upload RPM package
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpm-package
+          path: rpms/*.rpm
+          retention-days: 30
+
+  create-release:
+    name: Create Release
+    needs: [build-debian, build-rpm]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Download Debian package
+        uses: actions/download-artifact@v4
+        with:
+          name: debian-package
+          path: packages/
+      
+      - name: Download RPM package
+        uses: actions/download-artifact@v4
+        with:
+          name: rpm-package
+          path: packages/
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: packages/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
