@@ -1,0 +1,187 @@
+[
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXBench.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXBench.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXBench.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXCancellationRequest.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXCancellationRequest.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXCancellationRequest.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXConnectionState.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXConnectionState.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXConnectionState.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXDNSLookup.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXDNSLookup.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXDNSLookup.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXExponentialBackoff.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXExponentialBackoff.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXExponentialBackoff.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXGetFreePort.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXGetFreePort.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXGetFreePort.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXGzipCodec.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXGzipCodec.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXGzipCodec.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXHttp.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXHttp.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXHttp.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXHttpClient.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXHttpClient.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXHttpClient.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXHttpServer.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXHttpServer.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXHttpServer.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXNetSystem.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXNetSystem.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXNetSystem.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXSelectInterrupt.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSelectInterrupt.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSelectInterrupt.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXSelectInterruptFactory.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSelectInterruptFactory.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSelectInterruptFactory.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXSelectInterruptPipe.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSelectInterruptPipe.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSelectInterruptPipe.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXSelectInterruptEvent.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSelectInterruptEvent.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSelectInterruptEvent.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXSetThreadName.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSetThreadName.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSetThreadName.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXSocket.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSocket.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSocket.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXSocketConnect.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSocketConnect.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSocketConnect.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXSocketFactory.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSocketFactory.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSocketFactory.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXSocketServer.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSocketServer.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSocketServer.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXSocketTLSOptions.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSocketTLSOptions.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSocketTLSOptions.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXStrCaseCompare.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXStrCaseCompare.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXStrCaseCompare.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXUdpSocket.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXUdpSocket.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXUdpSocket.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXUrlParser.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXUrlParser.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXUrlParser.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXUuid.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXUuid.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXUuid.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXUserAgent.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXUserAgent.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXUserAgent.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXWebSocket.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocket.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocket.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXWebSocketCloseConstants.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketCloseConstants.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketCloseConstants.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXWebSocketHandshake.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketHandshake.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketHandshake.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXWebSocketHttpHeaders.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketHttpHeaders.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketHttpHeaders.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXWebSocketPerMessageDeflate.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketPerMessageDeflate.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketPerMessageDeflate.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXWebSocketPerMessageDeflateCodec.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketPerMessageDeflateCodec.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketPerMessageDeflateCodec.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXWebSocketPerMessageDeflateOptions.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketPerMessageDeflateOptions.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketPerMessageDeflateOptions.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXWebSocketProxyServer.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketProxyServer.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketProxyServer.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXWebSocketServer.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketServer.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketServer.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXWebSocketTransport.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketTransport.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXWebSocketTransport.cpp"
+},
+{
+  "directory": "/home/myuser/abaddon/build/subprojects/ixwebsocket",
+  "command": "/usr/bin/c++ -DIXWEBSOCKET_USE_OPEN_SSL -DIXWEBSOCKET_USE_TLS -DIXWEBSOCKET_USE_ZLIB -I/home/myuser/abaddon/subprojects/ixwebsocket  -Wall -Wextra -pedantic -fPIC -std=c++11 -o CMakeFiles/ixwebsocket.dir/ixwebsocket/IXSocketOpenSSL.cpp.o -c /home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSocketOpenSSL.cpp",
+  "file": "/home/myuser/abaddon/subprojects/ixwebsocket/ixwebsocket/IXSocketOpenSSL.cpp"
+}
+]
