@@ -1,0 +1,2 @@
+/usr/bin/ar qc libkeychain.a CMakeFiles/keychain.dir/src/keychain_linux.cpp.o
+/usr/bin/ranlib libkeychain.a
