@@ -1,0 +1,446 @@
+name: Test Build Packages
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-debian:
+    name: Build Debian Package
+    runs-on: ubuntu-latest
+    container: debian:12
+    steps:
+      - name: Install Debian build dependencies
+        run: |
+          apt-get update
+          apt-get install -y    \
+            git                 \
+            cmake               \
+            make                \
+            g++                 \
+            pkg-config          \
+            libgtkmm-3.0-dev    \
+            libcurl4-gnutls-dev \
+            libsqlite3-dev      \
+            libhandy-1-dev      \
+            libsecret-1-dev     \
+            libopus-dev         \
+            libsodium-dev       \
+            libspdlog-dev       \
+            nlohmann-json3-dev  \
+            libssl-dev
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          submodules: 'recursive'
+          fetch-depth: 0
+
+      - name: Build application
+        run: |
+          # CMAKE_INSTALL_PREFIX: https://github.com/uowuo/abaddon/commit/bf06e89d50e624e36dbbb6757260e5d0d758b4be
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+          make -C build -j$(nproc)
+
+      - name: Create package structure
+        run: |
+          # Install binary
+          mkdir -p debian-pkg/usr/share/abaddon debian-pkg/usr/bin
+          cp build/abaddon debian-pkg/usr/share/abaddon/abaddon
+          chmod 755 debian-pkg/usr/share/abaddon/abaddon
+          ln -s /usr/share/abaddon/abaddon debian-pkg/usr/bin/abaddon
+
+          # Copy resources if they exist
+          [ -d res/css ]   && cp -r res/css   debian-pkg/usr/share/abaddon/
+          [ -d res/res ]   && cp -r res/res   debian-pkg/usr/share/abaddon/
+          [ -d res/fonts ] && cp -r res/fonts debian-pkg/usr/share/abaddon/
+
+          # Install desktop file and icon
+          mkdir -p debian-pkg/usr/share/abaddon debian-pkg/usr/share/applications debian-pkg/usr/share/icons/hicolor/scalable/apps
+          cp res/desktop/io.github.uowuo.abaddon.desktop debian-pkg/usr/share/abaddon/abaddon.desktop
+          ln -s /usr/share/abaddon/abaddon.desktop debian-pkg/usr/share/applications/abaddon.desktop
+          cp res/desktop/icon.svg debian-pkg/usr/share/icons/hicolor/scalable/apps/abaddon.svg
+
+      - name: Disable git ownership check
+        run: |
+          git config --global --add safe.directory '*'
+
+      - name: Get version from git
+        id: version
+        run: |
+          if git describe --tags 2>/dev/null; then
+            VERSION="$(git describe --tags --abbrev=0 | sed 's/^v//' | sed 's/-/./g').git$(git rev-parse --short HEAD)"
+          else
+            VERSION="0.0.0.git$(git rev-parse --short HEAD)"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Package version: $VERSION"
+
+      - name: Get size from git
+        id: size
+        run: |
+          PKGSIZE=$(du -s ${PWD}/debian-pkg/usr | awk '{print $1}')
+          echo "size=$PKGSIZE" >> $GITHUB_OUTPUT
+          echo "Package Size: $PKGSIZE"
+
+      - name: Create Debian package structure
+        run: |
+          mkdir -p debian-pkg/DEBIAN
+
+          # Create control file
+          cat > debian-pkg/DEBIAN/control << 'EOF'
+          Package: abaddon
+          Version: ${{ steps.version.outputs.version }}
+          Architecture: amd64
+          Maintainer: Abaddon Team <ouwou@github.com>
+          Installed-Size: ${{ steps.size.outputs.size }}
+          Depends: libgtkmm-3.0-1v5, libhandy-1-0, libcurl4, libssl3 | libssl1.1, libopus0, libopusfile0, libsqlite3-0, libsecret-1-0, libasound2, libpulse0
+          Section: net
+          Priority: optional
+          Homepage: https://github.com/uowuo/abaddon
+          Description: GTK-based Discord client
+           Abaddon is a Discord client written in C++ with GTK.
+           Features include:
+            - Voice and text chat support
+            - Rich media rendering
+            - Modern GTK interface
+            - Native Linux integration
+          EOF
+
+          # Kill processes before install/upgrade
+          cat > debian-pkg/DEBIAN/preinst << 'EOF'
+          #!/bin/bash
+          set -e
+          if pgrep -x "abaddon" >/dev/null 2>&1; then
+            echo "Stopping Abaddon..."
+            pkill -TERM "abaddon" || true
+            sleep 2
+            pgrep -x "abaddon" >/dev/null 2>&1 && pkill -KILL "abaddon" || true
+          fi
+          exit 0
+          EOF
+          chmod 755 debian-pkg/DEBIAN/preinst
+
+          # Update databases after install
+          cat > debian-pkg/DEBIAN/postinst << 'EOF'
+          #!/bin/bash
+          set -e
+          if [ "$1" = "configure" ]; then
+            if command -v update-desktop-database >/dev/null 2>&1; then
+              update-desktop-database -q /usr/share/applications || true
+            fi
+            if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+              gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || true
+            fi
+          fi
+          exit 0
+          EOF
+          chmod 755 debian-pkg/DEBIAN/postinst
+
+          # Kill before removal
+          cat > debian-pkg/DEBIAN/prerm << 'EOF'
+          #!/bin/bash
+          set -e
+          if [ "$1" = "remove" ] || [ "$1" = "upgrade" ]; then
+            pgrep -x "abaddon" >/dev/null 2>&1 && { pkill -TERM "abaddon" || true; sleep 2; pkill -KILL "abaddon" 2>/dev/null || true; }
+          fi
+          exit 0
+          EOF
+          chmod 755 debian-pkg/DEBIAN/prerm
+
+          # Cleanup databases after removal
+          cat > debian-pkg/DEBIAN/postrm << 'EOF'
+          #!/bin/bash
+          set -e
+          if [ "$1" = "remove" ] || [ "$1" = "purge" ]; then
+            if command -v update-desktop-database >/dev/null 2>&1; then
+              update-desktop-database -q /usr/share/applications || true
+            fi
+            if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+              gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || true
+            fi
+          fi
+          exit 0
+          EOF
+          chmod 755 debian-pkg/DEBIAN/postrm
+
+      - name: Build Debian package
+        run: |
+          dpkg-deb --build debian-pkg abaddon_${{ steps.version.outputs.version }}_amd64.deb
+
+      - name: Verify Debian package
+        run: |
+          dpkg-deb --info abaddon_${{ steps.version.outputs.version }}_amd64.deb
+          dpkg-deb --contents abaddon_${{ steps.version.outputs.version }}_amd64.deb
+
+      - name: Upload Debian package
+        uses: actions/upload-artifact@v4
+        with:
+          name: debian-package
+          path: abaddon_*.deb
+          retention-days: 8
+
+
+  build-rpm:
+    name: Build RPM Package
+    runs-on: ubuntu-latest
+    container: fedora:39
+
+    steps:
+      - name: Install RPM build dependencies
+        run: |
+          dnf install -y     \
+            git              \
+            chrpath          \
+            pkg-config       \
+            rpm-build        \
+            rpmdevtools      \
+            gcc-c++          \
+            libstdc++-static \
+            glibc-static     \
+            cmake            \
+            make             \
+            gtkmm30-devel    \
+            libcurl-devel    \
+            sqlite-devel     \
+            openssl-devel    \
+            json-devel       \
+            libsecret-devel  \
+            libhandy-devel   \
+            opus-devel       \
+            libsodium-devel  \
+            spdlog-devel     \
+            gtkmm30          \
+            libcurl          \
+            sqlite-libs      \
+            openssl-libs     \
+            libsecret        \
+            libhandy         \
+            opus             \
+            libsodium        \
+            spdlog
+
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          submodules: 'recursive'
+          fetch-depth: 0
+
+      - name: Build application
+        run: |
+          # CMAKE_INSTALL_PREFIX: https://github.com/uowuo/abaddon/commit/bf06e89d50e624e36dbbb6757260e5d0d758b4be
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+          make -C build -j$(nproc)
+
+      - name: Disable git ownership check
+        run: |
+          git config --global --add safe.directory '*'
+
+      - name: Get version from git
+        id: version
+        run: |
+          if git describe --tags 2>/dev/null; then
+            VERSION="$(git describe --tags --abbrev=0 | sed 's/^v//' | sed 's/-/./g').git$(git rev-parse --short HEAD)"
+          else
+            VERSION="0.0.0.git$(git rev-parse --short HEAD)"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Package version: $VERSION"
+
+      - name: Setup RPM build environment
+        run: |
+          # create a rpmbuild in the home folder
+          rpmdev-setuptree
+
+      - name: Create source tarball
+        run: |
+          git archive --format=tar --prefix=abaddon-${{ steps.version.outputs.version }}/ \
+            -o $HOME/rpmbuild/SOURCES/abaddon-${{ steps.version.outputs.version }}.tar HEAD
+          git submodule foreach --recursive "tmp=\$(mktemp) ; git archive --format=tar --prefix=abaddon-${{ steps.version.outputs.version }}/\$path/ -o \$tmp HEAD ; tar -Af $HOME/rpmbuild/SOURCES/abaddon-${{ steps.version.outputs.version }}.tar \$tmp ; rm -f \$tmp"
+          gzip -f $HOME/rpmbuild/SOURCES/abaddon-${{ steps.version.outputs.version }}.tar
+
+      - name: Create RPM spec file
+        run: |
+          cat > $HOME/rpmbuild/SPECS/abaddon.spec << 'EOF'
+          %global source_date_epoch_from_changelog 0
+
+          Name:           abaddon
+          Version:        ${{ steps.version.outputs.version }}
+          Release:        1%{?dist}+
+          Epoch:          1
+          Summary:        An alternative Discord client with voice support made with C++ and GTK 3
+
+          License:        GPL-3.0
+          URL:            https://github.com/uowuo/abaddon
+          Source0:        %{name}-%{version}.tar.gz
+
+          # Build dependencies
+          BuildRequires:  git
+          BuildRequires:  chrpath
+          BuildRequires:  pkgconfig
+          BuildRequires:  gcc-c++
+          ## important for libc compilation
+          BuildRequires:  libstdc++-static
+          ## important for libc compilation
+          BuildRequires:  glibc-static
+          BuildRequires:  cmake
+          BuildRequires:  make
+          BuildRequires:  gtkmm30-devel
+          BuildRequires:  libcurl-devel
+          BuildRequires:  sqlite-devel
+          BuildRequires:  openssl-devel
+          BuildRequires:  json-devel
+          BuildRequires:  libsecret-devel
+          BuildRequires:  libhandy-devel
+          BuildRequires:  opus-devel
+          BuildRequires:  libsodium-devel
+          BuildRequires:  spdlog-devel
+          BuildRequires:  fontconfig-devel
+          BuildRequires:  libstdc++-devel
+          BuildRequires:  libstdc++
+
+          # Runtime dependencies
+          Requires:       gtkmm30
+          Requires:       libcurl
+          Requires:       sqlite-libs
+          Requires:       openssl-libs
+          Requires:       libsecret
+          Requires:       libhandy
+          Requires:       opus
+          Requires:       libsodium
+          Requires:       spdlog
+          Recommends:     fontconfig
+
+          %description
+          Abaddon is a Discord client written in C++ with GTK.
+          Features include voice and text chat support, rich media
+          rendering, modern GTK interface, and native Linux integration.
+
+          ## compilator preparation and decompress the Source0 file
+          %prep
+          %autosetup -n %{name}-%{version}
+
+
+          %build
+          # Configure with CMake
+          %cmake \
+              -DCMAKE_SKIP_INSTALL_RPATH=ON \
+              -DCMAKE_INSTALL_PREFIX=/usr \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_EXE_LINKER_FLAGS="-lcrypto -lssl" \
+              %{nil}
+
+          # Build
+          %cmake_build
+
+
+          %install
+          # Create directory structure
+          mkdir -p %{buildroot}/usr/share/abaddon
+          mkdir -p %{buildroot}/usr/bin
+          mkdir -p %{buildroot}/usr/share/applications
+          mkdir -p %{buildroot}/usr/share/icons/hicolor/scalable/apps
+
+          # Install needed library and create symlink
+          install -Dm0755 %{_vpath_builddir}/subprojects/ixwebsocket/libixwebsocket.so.11.3.2 \
+            %{buildroot}%{_libdir}/libixwebsocket.so.11.3.2
+          ln -sf libixwebsocket.so.11.3.2 %{buildroot}%{_libdir}/libixwebsocket.so.11
+          ln -sf libixwebsocket.so.11.3.2 %{buildroot}%{_libdir}/libixwebsocket.so
+
+          install -Dm0755 %{_vpath_builddir}/subprojects/keychain/libkeychain.so \
+            %{buildroot}%{_libdir}/libkeychain.so
+
+          install -Dm0755 %{_vpath_builddir}/libqrcodegen.so \
+            %{buildroot}%{_libdir}/libqrcodegen.so
+
+          # Install binary and create symlink
+          install -Dm755 %{_vpath_builddir}/abaddon %{buildroot}/usr/share/abaddon/abaddon
+          ln -s /usr/share/abaddon/abaddon %{buildroot}/usr/bin/abaddon
+
+          # STRIP RPATH/RUNPATH (fixes security errors)
+          chrpath --delete %{buildroot}%{_datadir}/abaddon/abaddon || :
+
+          # Install desktop file
+          install -Dm644 res/desktop/io.github.uowuo.abaddon.desktop \
+            %{buildroot}/usr/share/abaddon/abaddon.desktop
+          ln -s /usr/share/abaddon/abaddon.desktop \
+            %{buildroot}/usr/share/applications/abaddon.desktop
+
+          # Install icon
+          install -Dm644 res/desktop/icon.svg \
+            %{buildroot}/usr/share/icons/hicolor/scalable/apps/abaddon.svg
+
+          # Install additional resources
+          if [ -d res/css ]; then
+              mkdir -p %{buildroot}/usr/share/abaddon/css
+              cp -r res/css/* %{buildroot}/usr/share/abaddon/css/
+          fi
+
+          if [ -d res/res ]; then
+              mkdir -p %{buildroot}/usr/share/abaddon/res
+              cp -r res/res/* %{buildroot}/usr/share/abaddon/res/
+          fi
+
+          if [ -d res/fonts ]; then
+              mkdir -p %{buildroot}/usr/share/abaddon/fonts
+              cp -r res/fonts/* %{buildroot}/usr/share/abaddon/fonts/
+          fi
+
+
+          ## exec before install
+          %pre
+          pgrep -x "abaddon" >/dev/null 2>&1 && { pkill -TERM "abaddon" || true; sleep 2; pkill -KILL "abaddon" 2>/dev/null || true; }
+          exit 0
+
+          ## exec after install
+          %post
+          %{_bindir}/update-desktop-database -q /usr/share/applications 2>/dev/null || :
+          %{_bindir}/gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor 2>/dev/null || :
+
+          ## exec before uninstall
+          %preun
+          [ "$1" -eq 0 ] && pgrep -x "abaddon" >/dev/null 2>&1 && { pkill -TERM "abaddon" || true; sleep 2; pkill -KILL "abaddon" 2>/dev/null || true; }
+          exit 0
+
+          ## exec after uninstall
+          %postun
+          %{_bindir}/update-desktop-database -q /usr/share/applications 2>/dev/null || :
+          %{_bindir}/gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor 2>/dev/null || :
+
+          ## files on rpm
+          %files
+          %{_bindir}/abaddon
+          %{_libdir}/libixwebsocket.so.11.3.2
+          %{_libdir}/libixwebsocket.so.11
+          %{_libdir}/libixwebsocket.so
+          %{_libdir}/libkeychain.so
+          %{_libdir}/libqrcodegen.so
+          %{_datadir}/abaddon/*
+          %{_datadir}/applications/*.desktop
+          %{_datadir}/icons/hicolor/*/apps/*
+
+          %doc README.md
+          %license LICENSE
+          EOF
+
+
+      - name: Build RPM package
+        run: |
+          rpmbuild -ba $HOME/rpmbuild/SPECS/abaddon.spec
+
+      - name: Copy RPM to workspace
+        run: |
+          mkdir -p rpms
+          # not need to remove that for build process
+          #find $HOME/rpmbuild/RPMS -type f \( -name '*debuginfo*.rpm' -o -name '*debugsource*.rpm' \) -exec rm -f {} \;
+          find $HOME/rpmbuild/RPMS -name "*.rpm" -exec cp {} rpms/ \;
+
+      - name: Upload RPM package
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpm-package
+          path: rpms/*.rpm
+          retention-days: 8
+
