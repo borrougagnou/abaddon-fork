@@ -17,8 +17,8 @@ jobs:
     steps:
       - name: Install Debian build dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
+          apt-get update
+          apt-get install -y \
             git \
             cmake \
             make \
@@ -35,30 +35,6 @@ jobs:
             nlohmann-json3-dev \
             libssl-dev
 
-            #sudo apt-get install -y \
-            #  meson \
-            #  ninja-build \
-            #  pkg-config \
-            #  build-essential \
-            #  debhelper \
-            #  devscripts \
-            #  dh-make \
-            #  libgtkmm-3.0-dev \
-            #  libhandy-1-dev \
-            #  libcurl4-openssl-dev \
-            #  libssl-dev \
-            #  libopus-dev \
-            #  libopusfile-dev \
-            #  nlohmann-json3-dev \
-            #  libsqlite3-dev \
-            #  libsecret-1-dev \
-            #  libasound2-dev \
-            #  libpulse-dev \
-            #  libcairo2-dev \
-            #  libpango1.0-dev \
-            #  libglib2.0-dev \
-            #  git
-
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
@@ -66,7 +42,7 @@ jobs:
           fetch-depth: 0
           ref: package-create
 
-      # TODO REMOVE REF: PACKAGE-CREATE ABOVE !!! 
+      # TODO REMOVE REF: PACKAGE-CREATE ABOVE !!!
 
       - name: Build application
         run: |
@@ -76,33 +52,38 @@ jobs:
 
       - name: Create package structure
         run: |
-          mkdir -p debian-pkg/{usr/share/abaddon,usr/bin,usr/share/applications,usr/share/icons/hicolor/scalable/apps,DEBIAN}
+          #mkdir -p debian-pkg/{usr/share/abaddon,usr/bin,usr/share/applications,usr/share/icons/hicolor/scalable/apps,DEBIAN}
 
           # Install binary
-          mkdir -p debian-pkg/{usr/share/abaddon,usr/bin}
+          mkdir -p debian-pkg/usr/share/abaddon debian-pkg/usr/bin
           cp build/abaddon debian-pkg/usr/share/abaddon/abaddon
-          chmod 755 debian-pkg/usr/share/abaddon/abaddonv
+          chmod 755 debian-pkg/usr/share/abaddon/abaddon
           ln -s /usr/share/abaddon/abaddon debian-pkg/usr/bin/abaddon
 
           # Copy resources if they exist
           [ -d res/css ]   && cp -r res/css   debian-pkg/usr/share/abaddon/
-          [ -d res/res ]   && cp -r res/css   debian-pkg/usr/share/abaddon/
+          [ -d res/res ]   && cp -r res/res   debian-pkg/usr/share/abaddon/
           [ -d res/fonts ] && cp -r res/fonts debian-pkg/usr/share/abaddon/
 
           # Install desktop file and icon
-          mkdir -p debian-pkg/{usr/share/abaddon,usr/share/applications,usr/share/icons/hicolor/scalable/apps}
+          mkdir -p debian-pkg/usr/share/abaddon debian-pkg/usr/share/applications debian-pkg/usr/share/icons/hicolor/scalable/apps
           cp res/desktop/io.github.uowuo.abaddon.desktop debian-pkg/usr/share/abaddon/abaddon.desktop
           ln -s /usr/share/abaddon/abaddon.desktop debian-pkg/usr/share/applications/abaddon.desktop
           cp res/desktop/icon.svg debian-pkg/usr/share/icons/hicolor/scalable/apps/abaddon.svg
 
+      - name: Disable git ownership check
+        run: |
+          git config --global --add safe.directory '*'
 
       - name: Get version from git
         id: version
         run: |
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
+          if git describe --tags --exact-match 2>/dev/null; then
             VERSION=${GITHUB_REF#refs/tags/v}
+          elif git describe --tags 2>/dev/null; then
+            VERSION=$(git describe --tags | sed 's/^v//')
           else
-            VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo "0.0.0")
+            VERSION="0.0.0+git$(git rev-parse --short HEAD)"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Package version: $VERSION"
@@ -125,7 +106,7 @@ jobs:
           # Recommends: nlohmann-json3-dev, libssl3
 
           # Create control file
-          cat > debian-pkg/DEBIAN/control << EOF
+          cat > debian-pkg/DEBIAN/control << 'EOF'
           Package: abaddon
           Version: ${{ steps.version.outputs.version }}
           Architecture: amd64
@@ -221,47 +202,85 @@ jobs:
   build-rpm:
     name: Build RPM Package
     runs-on: ubuntu-latest
-    container: fedora:latest
+    container: fedora:39
 
     steps:
       - name: Install RPM build dependencies
         run: |
           dnf install -y \
-            meson \
-            ninja-build \
-            gcc \
+            git \
+            cmake \
+            make \
             gcc-c++ \
             pkg-config \
             rpm-build \
             rpmdevtools \
-            git \
             gtkmm30-devel \
             libhandy-devel \
             libcurl-devel \
-            openssl-devel \
-            opus-devel \
-            opusfile-devel \
-            json-devel \
             sqlite-devel \
             libsecret-devel \
-            alsa-lib-devel \
-            pulseaudio-libs-devel \
-            cairo-devel \
-            pango-devel \
-            glib2-devel
+            opus-devel \
+            libsodium-devel \
+            spdlog-devel \
+            json-devel \
+            openssl-devel
+
+        #run: |
+        #  dnf install -y \
+        #    meson \
+        #    ninja-build \
+        #    gcc \
+        #    gcc-c++ \
+        #    pkg-config \
+        #    rpm-build \
+        #    rpmdevtools \
+        #    git \
+        #    gtkmm30-devel \
+        #    libhandy-devel \
+        #    libcurl-devel \
+        #    openssl-devel \
+        #    opus-devel \
+        #    opusfile-devel \
+        #    json-devel \
+        #    sqlite-devel \
+        #    libsecret-devel \
+        #    alsa-lib-devel \
+        #    pulseaudio-libs-devel \
+        #    cairo-devel \
+        #    pango-devel \
+        #    glib2-devel
+
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: 'recursive'
+          fetch-depth: 0
+          ref: package-create
+
+      # TODO REMOVE REF: PACKAGE-CREATE ABOVE !!!
+
+      - name: Build application
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/share/abaddon
+          make -C build -j$(nproc)
+
+      - name: Disable git ownership check
+        run: |
+          git config --global --add safe.directory '*'
 
       - name: Get version from git
         id: version
         run: |
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
+          #VERSION="0.0.0+git$(git rev-parse --short HEAD)"
+          #echo VERSION="0.0.0+git$(git rev-parse --short HEAD)"
+          if git describe --tags --exact-match 2>/dev/null; then
             VERSION=${GITHUB_REF#refs/tags/v}
+          elif git describe --tags 2>/dev/null; then
+            VERSION="$(git describe --tags --abbrev=0 | sed 's/^v//' | sed 's/-/./g').git$(git rev-parse --short HEAD)"
           else
-            VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo "0.0.0")
+            VERSION="0.0.0.git$(git rev-parse --short HEAD)"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Package version: $VERSION"
@@ -269,7 +288,7 @@ jobs:
       - name: Setup RPM build environment
         run: |
           rpmdev-setuptree
-          mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+          mkdir -p ~/rpmbuild/BUILD ~/rpmbuild/RPMS ~/rpmbuild/SOURCES ~/rpmbuild/SPECS ~/rpmbuild/SRPMS
 
       - name: Create source tarball
         run: |
@@ -278,43 +297,24 @@ jobs:
 
       - name: Create RPM spec file
         run: |
-          cat > ~/rpmbuild/SPECS/abaddon.spec << 'SPECEOF'
+          cat > ~/rpmbuild/SPECS/abaddon.spec << 'EOF'
           Name:           abaddon
           Version:        ${{ steps.version.outputs.version }}
           Release:        1%{?dist}
           Summary:        GTK-based Discord client
 
           License:        GPL-3.0
-          URL:            https://github.com/deskree-inc/abaddon-fork
+          URL:            https://github.com/uowuo/abaddon
           Source0:        %{name}-%{version}.tar.gz
 
-          BuildRequires:  meson >= 0.55.0
-          BuildRequires:  ninja-build
-          BuildRequires:  gcc-c++
-          BuildRequires:  pkgconfig
-          BuildRequires:  pkgconfig(gtkmm-3.0)
-          BuildRequires:  libhandy-devel
-          BuildRequires:  pkgconfig(libcurl)
-          BuildRequires:  pkgconfig(openssl)
-          BuildRequires:  pkgconfig(opus)
-          BuildRequires:  pkgconfig(opusfile)
-          BuildRequires:  pkgconfig(nlohmann_json)
-          BuildRequires:  pkgconfig(sqlite3)
-          BuildRequires:  pkgconfig(libsecret-1)
-          BuildRequires:  pkgconfig(alsa)
-          BuildRequires:  pkgconfig(libpulse)
-          BuildRequires:  git
+          BuildRequires:  cmake make gcc-c++ pkgconfig git
+          BuildRequires:  gtkmm30-devel libhandy-devel libcurl-devel
+          BuildRequires:  sqlite-devel libsecret-devel opus-devel
+          BuildRequires:  libsodium-devel spdlog-devel json-devel openssl-devel
 
-          Requires:       gtkmm30
-          Requires:       libhandy
-          Requires:       libcurl
-          Requires:       openssl-libs
-          Requires:       opus
-          Requires:       opusfile
-          Requires:       sqlite-libs
-          Requires:       libsecret
-          Requires:       alsa-lib
-          Requires:       pulseaudio-libs
+          Requires:       gtkmm30 libhandy libcurl sqlite-libs
+          Requires:       libsecret opus libsodium spdlog
+          Recommends:     openssl-libs
 
           %description
           Abaddon is a Discord client written in C++ with GTK.
@@ -325,19 +325,32 @@ jobs:
           %autosetup -n %{name}-%{version}
 
           %build
-          %meson --buildtype=release
-          %meson_build
+          %cmake -DCMAKE_BUILD_TYPE=Release
+          %cmake_build
 
           %install
-          %meson_install
+          mkdir -p %{buildroot}/{usr/share/abaddon,usr/bin,usr/share/applications,usr/share/icons/hicolor/scalable/apps}
+          install -Dm755 %{_vpath_builddir}/abaddon %{buildroot}/usr/share/abaddon/abaddon
+          ln -s /usr/share/abaddon/abaddon %{buildroot}/usr/bin/abaddon
+          install -Dm644 res/desktop/io.github.uowuo.abaddon.desktop %{buildroot}/usr/share/abaddon/abaddon.desktop
+          ln -s /usr/share/abaddon/abaddon.desktop %{buildroot}/usr/share/applications/abaddon.desktop
+          install -Dm644 res/desktop/icon.svg %{buildroot}/usr/share/icons/hicolor/scalable/apps/abaddon.svg
+
+          %pre
+          pgrep -x "abaddon" >/dev/null 2>&1 && { pkill -TERM "abaddon" || true; sleep 2; pkill -KILL "abaddon" 2>/dev/null || true; }
+          exit 0
 
           %post
-          /usr/bin/update-desktop-database -q /usr/share/applications || :
-          /usr/bin/gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || :
+          /usr/bin/update-desktop-database -q /usr/share/applications 2>/dev/null || :
+          /usr/bin/gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor 2>/dev/null || :
+
+          %preun
+          [ "$1" -eq 0 ] && pgrep -x "abaddon" >/dev/null 2>&1 && { pkill -TERM "abaddon" || true; sleep 2; pkill -KILL "abaddon" 2>/dev/null || true; }
+          exit 0
 
           %postun
-          /usr/bin/update-desktop-database -q /usr/share/applications || :
-          /usr/bin/gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || :
+          /usr/bin/update-desktop-database -q /usr/share/applications 2>/dev/null || :
+          /usr/bin/gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor 2>/dev/null || :
 
           %files
           %{_bindir}/abaddon
@@ -346,11 +359,7 @@ jobs:
           %{_datadir}/metainfo/*.appdata.xml
           %doc README.md
           %license LICENSE
-
-          %changelog
-          * $(date "+%a %b %d %Y") Automated Build <build@example.com> - ${{ steps.version.outputs.version }}-1
-          - Automated build from GitHub Actions
-          SPECEOF
+          EOF
 
       - name: Build RPM package
         run: |
@@ -383,11 +392,11 @@ jobs:
           name: debian-package
           path: packages/
 
-      #- name: Download RPM package from artifact
-      #  uses: actions/download-artifact@v4
-      #  with:
-      #    name: rpm-package
-      #    path: packages/
+      - name: Download RPM package from artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: rpm-package
+          path: packages/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
