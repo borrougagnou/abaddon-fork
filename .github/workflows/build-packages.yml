@@ -46,7 +46,8 @@ jobs:
 
       - name: Build application
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/share/abaddon
+          # CMAKE_INSTALL_PREFIX: https://github.com/uowuo/abaddon/commit/bf06e89d50e624e36dbbb6757260e5d0d758b4be
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
           make -C build -j$(nproc)
 
 
@@ -81,12 +82,25 @@ jobs:
           if git describe --tags --exact-match 2>/dev/null; then
             VERSION=${GITHUB_REF#refs/tags/v}
           elif git describe --tags 2>/dev/null; then
-            VERSION=$(git describe --tags | sed 's/^v//')
+            VERSION="$(git describe --tags --abbrev=0 | sed 's/^v//' | sed 's/-/./g').git$(git rev-parse --short HEAD)"
           else
-            VERSION="0.0.0+git$(git rev-parse --short HEAD)"
+            VERSION="0.0.0.git$(git rev-parse --short HEAD)"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Package version: $VERSION"
+
+      #- name: Get version from git
+      #  id: version
+      #  run: |
+      #    if git describe --tags --exact-match 2>/dev/null; then
+      #      VERSION=${GITHUB_REF#refs/tags/v}
+      #    elif git describe --tags 2>/dev/null; then
+      #      VERSION=$(git describe --tags | sed 's/^v//')
+      #    else
+      #      VERSION="0.0.0+git$(git rev-parse --short HEAD)"
+      #    fi
+      #    echo "version=$VERSION" >> $GITHUB_OUTPUT
+      #    echo "Package version: $VERSION"
 
       - name: Get size from git
         id: size
@@ -110,7 +124,7 @@ jobs:
           Package: abaddon
           Version: ${{ steps.version.outputs.version }}
           Architecture: amd64
-          Maintainer: Abaddon Team <team@example.com>
+          Maintainer: Abaddon Team <ouwou@github.com>
           Installed-Size: ${{ steps.size.outputs.size }}
           Depends: libgtkmm-3.0-1v5, libhandy-1-0, libcurl4, libssl3 | libssl1.1, libopus0, libopusfile0, libsqlite3-0, libsecret-1-0, libasound2, libpulse0
           Section: net
@@ -182,7 +196,6 @@ jobs:
           EOF
           chmod 755 debian-pkg/DEBIAN/postrm
 
-
       - name: Build Debian package
         run: |
           dpkg-deb --build debian-pkg abaddon_${{ steps.version.outputs.version }}_amd64.deb
@@ -198,6 +211,7 @@ jobs:
           name: debian-package
           path: abaddon_*.deb
           retention-days: 30
+
 
   build-rpm:
     name: Build RPM Package
@@ -263,7 +277,8 @@ jobs:
 
       - name: Build application
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/share/abaddon
+          # CMAKE_INSTALL_PREFIX: https://github.com/uowuo/abaddon/commit/bf06e89d50e624e36dbbb6757260e5d0d758b4be
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
           make -C build -j$(nproc)
 
       - name: Disable git ownership check
@@ -273,8 +288,6 @@ jobs:
       - name: Get version from git
         id: version
         run: |
-          #VERSION="0.0.0+git$(git rev-parse --short HEAD)"
-          #echo VERSION="0.0.0+git$(git rev-parse --short HEAD)"
           if git describe --tags --exact-match 2>/dev/null; then
             VERSION=${GITHUB_REF#refs/tags/v}
           elif git describe --tags 2>/dev/null; then
