@@ -12,14 +12,14 @@ on:
 jobs:
   build-debian:
     name: Build Debian Package
-    runs-on: ubuntu-22.04
-    
+    runs-on: debian-12
+    container: debian:12
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: 'recursive'
-      
+
       - name: Install Debian build dependencies
         run: |
           sudo apt-get update
@@ -46,7 +46,7 @@ jobs:
             libpango1.0-dev \
             libglib2.0-dev \
             git
-      
+
       - name: Get version from git
         id: version
         run: |
@@ -57,36 +57,47 @@ jobs:
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Package version: $VERSION"
-      
+
+      - name: Get size from git
+        id: size
+        run: |
+          PKGSIZE=$(du -s ${PWD}/debian-pkg/usr | awk '{print $1}')
+          echo "size=$PKGSIZE" >> $GITHUB_OUTPUT
+          echo "Package Size: $PKGSIZE"
+
+
+
       - name: Configure Meson
         run: |
           meson setup build \
             --prefix=/usr \
             --buildtype=release \
             -Dstrip=true
-      
+
       - name: Build application
         run: meson compile -C build
-      
+
       - name: Install to temporary directory
         run: |
           DESTDIR="${PWD}/debian-pkg" meson install -C build
-      
+
       - name: Create Debian package structure
         run: |
           mkdir -p debian-pkg/DEBIAN
-          
+
           # to debug if needed:
           # g++ cmake libgtkmm-3.0-dev libcurl4-gnutls-dev libsqlite3-dev libssl-dev nlohmann-json3-dev libhandy-1-dev libsecret-1-dev libopus-dev libsodium-dev libspdlog-dev
           # Create control file
           cat > debian-pkg/DEBIAN/control << EOF
           Package: abaddon
           Version: ${{ steps.version.outputs.version }}
+          Architecture: amd64
+          Maintainer: Abaddon Team <team@example.com>
+          Installed-Size: ${{ steps.size.outputs.size }}
+          Depends: libgtkmm-3.0-1v5, libhandy-1-0, libcurl4, libssl3 | libssl1.1, libopus0, libopusfile0, libsqlite3-0, libsecret-1-0, libasound2, libpulse0
           Section: net
           Priority: optional
-          Architecture: amd64
-          Depends: libgtkmm-3.0-1v5, libhandy-1-0, libcurl4, libssl3 | libssl1.1, libopus0, libopusfile0, libsqlite3-0, libsecret-1-0, libasound2, libpulse0
-          Maintainer: Abaddon Fork Team <team@example.com>
+          Homepage: https://github.com/uowuo/abaddon
           Description: GTK-based Discord client
            Abaddon is a Discord client written in C++ with GTK.
            Features include:
@@ -95,7 +106,7 @@ jobs:
             - Modern GTK interface
             - Native Linux integration
           EOF
-          
+
           # Create postinst script
           cat > debian-pkg/DEBIAN/postinst << 'EOF'
           #!/bin/bash
@@ -111,7 +122,7 @@ jobs:
           exit 0
           EOF
           chmod 755 debian-pkg/DEBIAN/postinst
-          
+
           # Create postrm script
           cat > debian-pkg/DEBIAN/postrm << 'EOF'
           #!/bin/bash
@@ -127,16 +138,16 @@ jobs:
           exit 0
           EOF
           chmod 755 debian-pkg/DEBIAN/postrm
-      
+
       - name: Build Debian package
         run: |
           dpkg-deb --build debian-pkg abaddon_${{ steps.version.outputs.version }}_amd64.deb
-          
+
       - name: Verify Debian package
         run: |
           dpkg-deb --info abaddon_${{ steps.version.outputs.version }}_amd64.deb
           dpkg-deb --contents abaddon_${{ steps.version.outputs.version }}_amd64.deb
-      
+
       - name: Upload Debian package
         uses: actions/upload-artifact@v4
         with:
@@ -148,7 +159,7 @@ jobs:
     name: Build RPM Package
     runs-on: ubuntu-latest
     container: fedora:latest
-    
+
     steps:
       - name: Install RPM build dependencies
         run: |
@@ -175,12 +186,12 @@ jobs:
             cairo-devel \
             pango-devel \
             glib2-devel
-      
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: 'recursive'
-      
+
       - name: Get version from git
         id: version
         run: |
@@ -191,17 +202,17 @@ jobs:
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Package version: $VERSION"
-      
+
       - name: Setup RPM build environment
         run: |
           rpmdev-setuptree
           mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
-      
+
       - name: Create source tarball
         run: |
           git archive --format=tar.gz --prefix=abaddon-${{ steps.version.outputs.version }}/ \
             -o ~/rpmbuild/SOURCES/abaddon-${{ steps.version.outputs.version }}.tar.gz HEAD
-      
+
       - name: Create RPM spec file
         run: |
           cat > ~/rpmbuild/SPECS/abaddon.spec << 'SPECEOF'
@@ -209,11 +220,11 @@ jobs:
           Version:        ${{ steps.version.outputs.version }}
           Release:        1%{?dist}
           Summary:        GTK-based Discord client
-          
+
           License:        GPL-3.0
           URL:            https://github.com/deskree-inc/abaddon-fork
           Source0:        %{name}-%{version}.tar.gz
-          
+
           BuildRequires:  meson >= 0.55.0
           BuildRequires:  ninja-build
           BuildRequires:  gcc-c++
@@ -230,7 +241,7 @@ jobs:
           BuildRequires:  pkgconfig(alsa)
           BuildRequires:  pkgconfig(libpulse)
           BuildRequires:  git
-          
+
           Requires:       gtkmm30
           Requires:       libhandy
           Requires:       libcurl
@@ -241,30 +252,30 @@ jobs:
           Requires:       libsecret
           Requires:       alsa-lib
           Requires:       pulseaudio-libs
-          
+
           %description
           Abaddon is a Discord client written in C++ with GTK.
           Features include voice and text chat support, rich media
           rendering, modern GTK interface, and native Linux integration.
-          
+
           %prep
           %autosetup -n %{name}-%{version}
-          
+
           %build
           %meson --buildtype=release
           %meson_build
-          
+
           %install
           %meson_install
-          
+
           %post
           /usr/bin/update-desktop-database -q /usr/share/applications || :
           /usr/bin/gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || :
-          
+
           %postun
           /usr/bin/update-desktop-database -q /usr/share/applications || :
           /usr/bin/gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || :
-          
+
           %files
           %{_bindir}/abaddon
           %{_datadir}/applications/*.desktop
@@ -272,21 +283,21 @@ jobs:
           %{_datadir}/metainfo/*.appdata.xml
           %doc README.md
           %license LICENSE
-          
+
           %changelog
           * $(date "+%a %b %d %Y") Automated Build <build@example.com> - ${{ steps.version.outputs.version }}-1
           - Automated build from GitHub Actions
           SPECEOF
-      
+
       - name: Build RPM package
         run: |
           rpmbuild -ba ~/rpmbuild/SPECS/abaddon.spec
-      
+
       - name: Copy RPM to workspace
         run: |
           mkdir -p rpms
           find ~/rpmbuild/RPMS -name "*.rpm" -exec cp {} rpms/ \;
-      
+
       - name: Upload RPM package
         uses: actions/upload-artifact@v4
         with:
@@ -301,20 +312,20 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+
     steps:
       - name: Download Debian package
         uses: actions/download-artifact@v4
         with:
           name: debian-package
           path: packages/
-      
+
       - name: Download RPM package
         uses: actions/download-artifact@v4
         with:
           name: rpm-package
           path: packages/
-      
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
