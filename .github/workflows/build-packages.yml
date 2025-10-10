@@ -12,40 +12,90 @@ on:
 jobs:
   build-debian:
     name: Build Debian Package
-    runs-on: debian-12
+    runs-on: ubuntu-latest
     container: debian:12
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: 'recursive'
+          fetch-depth: 0
+          ref: package-create
+
+      # TODO REMOVE REF: PACKAGE-CREATE ABOVE !!!
 
       - name: Install Debian build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            meson \
-            ninja-build \
+            git \
+            cmake \
+            make \
+            g++ \
             pkg-config \
-            build-essential \
-            debhelper \
-            devscripts \
-            dh-make \
             libgtkmm-3.0-dev \
-            libhandy-1-dev \
-            libcurl4-openssl-dev \
-            libssl-dev \
-            libopus-dev \
-            libopusfile-dev \
-            nlohmann-json3-dev \
+            libcurl4-gnutls-dev \
             libsqlite3-dev \
+            libhandy-1-dev \
             libsecret-1-dev \
-            libasound2-dev \
-            libpulse-dev \
-            libcairo2-dev \
-            libpango1.0-dev \
-            libglib2.0-dev \
-            git
+            libopus-dev \
+            libsodium-dev \
+            libspdlog-dev \
+            nlohmann-json3-dev \
+            libssl-dev
+
+            #sudo apt-get install -y \
+            #  meson \
+            #  ninja-build \
+            #  pkg-config \
+            #  build-essential \
+            #  debhelper \
+            #  devscripts \
+            #  dh-make \
+            #  libgtkmm-3.0-dev \
+            #  libhandy-1-dev \
+            #  libcurl4-openssl-dev \
+            #  libssl-dev \
+            #  libopus-dev \
+            #  libopusfile-dev \
+            #  nlohmann-json3-dev \
+            #  libsqlite3-dev \
+            #  libsecret-1-dev \
+            #  libasound2-dev \
+            #  libpulse-dev \
+            #  libcairo2-dev \
+            #  libpango1.0-dev \
+            #  libglib2.0-dev \
+            #  git
+
+
+      - name: Build application
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/share/abaddon
+          make -C build -j$(nproc)
+
+
+      - name: Create package structure
+        run: |
+          mkdir -p debian-pkg/{usr/share/abaddon,usr/bin,usr/share/applications,usr/share/icons/hicolor/scalable/apps,DEBIAN}
+
+          # Install binary
+          mkdir -p debian-pkg/{usr/share/abaddon,usr/bin}
+          cp build/abaddon debian-pkg/usr/share/abaddon/abaddon
+          chmod 755 debian-pkg/usr/share/abaddon/abaddonv
+          ln -s /usr/share/abaddon/abaddon debian-pkg/usr/bin/abaddon
+
+          # Copy resources if they exist
+          [ -d res/css ]   && cp -r res/css   debian-pkg/usr/share/abaddon/
+          [ -d res/res ]   && cp -r res/css   debian-pkg/usr/share/abaddon/
+          [ -d res/fonts ] && cp -r res/fonts debian-pkg/usr/share/abaddon/
+
+          # Install desktop file and icon
+          mkdir -p debian-pkg/{usr/share/abaddon,usr/share/applications,usr/share/icons/hicolor/scalable/apps}
+          cp res/desktop/io.github.uowuo.abaddon.desktop debian-pkg/usr/share/abaddon/abaddon.desktop
+          ln -s /usr/share/abaddon/abaddon.desktop debian-pkg/usr/share/applications/abaddon.desktop
+          cp res/desktop/icon.svg debian-pkg/usr/share/icons/hicolor/scalable/apps/abaddon.svg
+
 
       - name: Get version from git
         id: version
@@ -65,28 +115,16 @@ jobs:
           echo "size=$PKGSIZE" >> $GITHUB_OUTPUT
           echo "Package Size: $PKGSIZE"
 
-
-
-      - name: Configure Meson
-        run: |
-          meson setup build \
-            --prefix=/usr \
-            --buildtype=release \
-            -Dstrip=true
-
-      - name: Build application
-        run: meson compile -C build
-
-      - name: Install to temporary directory
-        run: |
-          DESTDIR="${PWD}/debian-pkg" meson install -C build
-
       - name: Create Debian package structure
         run: |
           mkdir -p debian-pkg/DEBIAN
 
           # to debug if needed:
           # g++ cmake libgtkmm-3.0-dev libcurl4-gnutls-dev libsqlite3-dev libssl-dev nlohmann-json3-dev libhandy-1-dev libsecret-1-dev libopus-dev libsodium-dev libspdlog-dev
+
+          # Depends: libgtkmm-3.0-1v5, libcurl4-gnutls-dev, libsqlite3-0, libhandy-1-0, libsecret-1-0, libopus0, libsodium23, libspdlog1
+          # Recommends: nlohmann-json3-dev, libssl3
+
           # Create control file
           cat > debian-pkg/DEBIAN/control << EOF
           Package: abaddon
@@ -107,7 +145,21 @@ jobs:
             - Native Linux integration
           EOF
 
-          # Create postinst script
+          # Kill processes before install/upgrade
+          cat > debian-pkg/DEBIAN/preinst << 'EOF'
+          #!/bin/bash
+          set -e
+          if pgrep -x "abaddon" >/dev/null 2>&1; then
+            echo "Stopping Abaddon..."
+            pkill -TERM "abaddon" || true
+            sleep 2
+            pgrep -x "abaddon" >/dev/null 2>&1 && pkill -KILL "abaddon" || true
+          fi
+          exit 0
+          EOF
+          chmod 755 debian-pkg/DEBIAN/preinst
+
+          # Update databases after install
           cat > debian-pkg/DEBIAN/postinst << 'EOF'
           #!/bin/bash
           set -e
@@ -123,7 +175,18 @@ jobs:
           EOF
           chmod 755 debian-pkg/DEBIAN/postinst
 
-          # Create postrm script
+          # Kill before removal
+          cat > debian-pkg/DEBIAN/prerm << 'EOF'
+          #!/bin/bash
+          set -e
+          if [ "$1" = "remove" ] || [ "$1" = "upgrade" ]; then
+            pgrep -x "abaddon" >/dev/null 2>&1 && { pkill -TERM "abaddon" || true; sleep 2; pkill -KILL "abaddon" 2>/dev/null || true; }
+          fi
+          exit 0
+          EOF
+          chmod 755 debian-pkg/DEBIAN/prerm
+
+          # Cleanup databases after removal
           cat > debian-pkg/DEBIAN/postrm << 'EOF'
           #!/bin/bash
           set -e
@@ -138,6 +201,7 @@ jobs:
           exit 0
           EOF
           chmod 755 debian-pkg/DEBIAN/postrm
+
 
       - name: Build Debian package
         run: |
@@ -314,20 +378,20 @@ jobs:
       contents: write
 
     steps:
-      - name: Download Debian package
+      - name: Download Debian package from artifact
         uses: actions/download-artifact@v4
         with:
           name: debian-package
           path: packages/
 
-      - name: Download RPM package
-        uses: actions/download-artifact@v4
-        with:
-          name: rpm-package
-          path: packages/
+      #- name: Download RPM package from artifact
+      #  uses: actions/download-artifact@v4
+      #  with:
+      #    name: rpm-package
+      #    path: packages/
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: packages/*
           generate_release_notes: true
