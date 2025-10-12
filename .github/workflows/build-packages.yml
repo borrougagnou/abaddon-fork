@@ -8,6 +8,25 @@ on:
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create GitHub Release after successful builds'
+        required: true
+        type: boolean
+        default: false
+      release_tag:
+        description: 'Release tag (e.g., v0.2.3) - required if creating release'
+        required: true
+        type: string
+      release_draft:
+        description: 'Create GitHub Draft after successful builds'
+        type: boolean
+        default: false
+      release_prerelease:
+        description: 'Create GitHub Pre-Release after successful builds'
+        type: boolean
+        default: false
+
 
 jobs:
   build-debian:
@@ -465,7 +484,11 @@ jobs:
   create-release:
     name: Create Release
     needs: [build-debian, build-rpm]
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: |
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.create_release == 'true' &&
+      success()
+
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -483,13 +506,19 @@ jobs:
           name: rpm-package
           path: packages/
 
+      - name: List packages
+        run: |
+          echo "Packages to be released:"
+          ls -lh packages/
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event.inputs.release_tag }}
           files: packages/*
           generate_release_notes: true
-          draft: false
-          prerelease: false
+          draft: ${{ github.event.inputs.release_draft }}
+          prerelease: ${{ github.event.inputs.release_prerelease }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
