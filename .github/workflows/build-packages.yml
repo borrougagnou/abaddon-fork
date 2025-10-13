@@ -59,9 +59,6 @@ jobs:
         with:
           submodules: 'recursive'
           fetch-depth: 0
-          ref: package-create
-
-      # TODO REMOVE REF: PACKAGE-CREATE ABOVE !!!
 
       - name: Build application
         run: |
@@ -72,8 +69,6 @@ jobs:
 
       - name: Create package structure
         run: |
-          #mkdir -p debian-pkg/{usr/share/abaddon,usr/bin,usr/share/applications,usr/share/icons/hicolor/scalable/apps,DEBIAN}
-
           # Install binary
           mkdir -p debian-pkg/usr/share/abaddon debian-pkg/usr/bin
           cp build/abaddon debian-pkg/usr/share/abaddon/abaddon
@@ -302,8 +297,10 @@ jobs:
           BuildRequires:  chrpath
           BuildRequires:  pkgconfig
           BuildRequires:  gcc-c++
-          BuildRequires:  libstdc++-static #important for libc
-          BuildRequires:  glibc-static # important for libc
+          ## important for libc compilation
+          BuildRequires:  libstdc++-static
+          ## important for libc compilation
+          BuildRequires:  glibc-static
           BuildRequires:  cmake
           BuildRequires:  make
           BuildRequires:  gtkmm30-devel
