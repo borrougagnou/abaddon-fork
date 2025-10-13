@@ -236,7 +236,17 @@ jobs:
             libhandy-devel   \
             opus-devel       \
             libsodium-devel  \
-            spdlog-devel
+            spdlog-devel     \
+            gtkmm30          \
+            libcurl          \
+            sqlite-libs      \
+            openssl-libs     \
+            libsecret        \
+            libhandy         \
+            opus             \
+            libsodium        \
+            spdlog
+
 
       - name: Checkout repository
         uses: actions/checkout@v5
