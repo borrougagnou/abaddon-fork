@@ -37,21 +37,21 @@ jobs:
       - name: Install Debian build dependencies
         run: |
           apt-get update
-          apt-get install -y \
-            git \
-            cmake \
-            make \
-            g++ \
-            pkg-config \
-            libgtkmm-3.0-dev \
+          apt-get install -y    \
+            git                 \
+            cmake               \
+            make                \
+            g++                 \
+            pkg-config          \
+            libgtkmm-3.0-dev    \
             libcurl4-gnutls-dev \
-            libsqlite3-dev \
-            libhandy-1-dev \
-            libsecret-1-dev \
-            libopus-dev \
-            libsodium-dev \
-            libspdlog-dev \
-            nlohmann-json3-dev \
+            libsqlite3-dev      \
+            libhandy-1-dev      \
+            libsecret-1-dev     \
+            libopus-dev         \
+            libsodium-dev       \
+            libspdlog-dev       \
+            nlohmann-json3-dev  \
             libssl-dev
 
       - name: Checkout repository
@@ -108,19 +108,6 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Package version: $VERSION"
 
-      #- name: Get version from git
-      #  id: version
-      #  run: |
-      #    if git describe --tags --exact-match 2>/dev/null; then
-      #      VERSION=${GITHUB_REF#refs/tags/v}
-      #    elif git describe --tags 2>/dev/null; then
-      #      VERSION=$(git describe --tags | sed 's/^v//')
-      #    else
-      #      VERSION="0.0.0+git$(git rev-parse --short HEAD)"
-      #    fi
-      #    echo "version=$VERSION" >> $GITHUB_OUTPUT
-      #    echo "Package version: $VERSION"
-
       - name: Get size from git
         id: size
         run: |
@@ -131,12 +118,6 @@ jobs:
       - name: Create Debian package structure
         run: |
           mkdir -p debian-pkg/DEBIAN
-
-          # to debug if needed:
-          # g++ cmake libgtkmm-3.0-dev libcurl4-gnutls-dev libsqlite3-dev libssl-dev nlohmann-json3-dev libhandy-1-dev libsecret-1-dev libopus-dev libsodium-dev libspdlog-dev
-
-          # Depends: libgtkmm-3.0-1v5, libcurl4-gnutls-dev, libsqlite3-0, libhandy-1-0, libsecret-1-0, libopus0, libsodium23, libspdlog1
-          # Recommends: nlohmann-json3-dev, libssl3
 
           # Create control file
           cat > debian-pkg/DEBIAN/control << 'EOF'
@@ -240,60 +221,31 @@ jobs:
     steps:
       - name: Install RPM build dependencies
         run: |
-          dnf install -y \
-            git \
-            cmake \
-            make \
-            gcc-c++ \
-            pkg-config \
-            rpm-build \
-            rpmdevtools \
-            chrpath \
-            gtkmm30-devel \
-            libhandy-devel \
-            libcurl-devel \
-            sqlite-devel \
+          dnf install -y    \
+            git             \
+            chrpath         \
+            pkg-config      \
+            rpm-build       \
+            rpmdevtools     \
+            gcc-c++         \
+            cmake           \
+            make            \
+            gtkmm30-devel   \
+            libcurl-devel   \
+            sqlite-devel    \
+            openssl-devel   \
+            json-devel      \
             libsecret-devel \
-            opus-devel \
+            libhandy-devel  \
+            opus-devel      \
             libsodium-devel \
-            spdlog-devel \
-            json-devel \
-            openssl-devel
-
-        #run: |
-        #  dnf install -y \
-        #    meson \
-        #    ninja-build \
-        #    gcc \
-        #    gcc-c++ \
-        #    pkg-config \
-        #    rpm-build \
-        #    rpmdevtools \
-        #    git \
-        #    gtkmm30-devel \
-        #    libhandy-devel \
-        #    libcurl-devel \
-        #    openssl-devel \
-        #    opus-devel \
-        #    opusfile-devel \
-        #    json-devel \
-        #    sqlite-devel \
-        #    libsecret-devel \
-        #    alsa-lib-devel \
-        #    pulseaudio-libs-devel \
-        #    cairo-devel \
-        #    pango-devel \
-        #    glib2-devel
-
+            spdlog-devel
 
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
           submodules: 'recursive'
           fetch-depth: 0
-          ref: package-create
-
-      # TODO REMOVE REF: PACKAGE-CREATE ABOVE !!!
 
       - name: Build application
         run: |
@@ -330,10 +282,11 @@ jobs:
           git submodule foreach --recursive "tmp=\$(mktemp) ; git archive --format=tar --prefix=abaddon-${{ steps.version.outputs.version }}/\$path/ -o \$tmp HEAD ; tar -Af $HOME/rpmbuild/SOURCES/abaddon-${{ steps.version.outputs.version }}.tar \$tmp ; rm -f \$tmp"
           gzip -f $HOME/rpmbuild/SOURCES/abaddon-${{ steps.version.outputs.version }}.tar
 
-
       - name: Create RPM spec file
         run: |
           cat > $HOME/rpmbuild/SPECS/abaddon.spec << 'EOF'
+          %global source_date_epoch_from_changelog 0
+
           Name:           abaddon
           Version:        ${{ steps.version.outputs.version }}
           Release:        1%{?dist}+
@@ -345,34 +298,38 @@ jobs:
           Source0:        %{name}-%{version}.tar.gz
 
           # Build dependencies
-          BuildRequires:  chrpath
           BuildRequires:  git
+          BuildRequires:  chrpath
+          BuildRequires:  pkgconfig
+          BuildRequires:  gcc-c++
+          BuildRequires:  libstdc++-static #important for libc
+          BuildRequires:  glibc-static # important for libc
           BuildRequires:  cmake
           BuildRequires:  make
-          BuildRequires:  gcc-c++
-          BuildRequires:  pkgconfig
           BuildRequires:  gtkmm30-devel
-          BuildRequires:  libhandy-devel
           BuildRequires:  libcurl-devel
           BuildRequires:  sqlite-devel
+          BuildRequires:  openssl-devel          
+          BuildRequires:  json-devel          
           BuildRequires:  libsecret-devel
+          BuildRequires:  libhandy-devel
           BuildRequires:  opus-devel
           BuildRequires:  libsodium-devel
           BuildRequires:  spdlog-devel
-          BuildRequires:  json-devel
-          BuildRequires:  openssl-devel
           BuildRequires:  fontconfig-devel
+          #BuildRequires:  libstdc++-devel
+          #BuildRequires:  libstdc++
 
           # Runtime dependencies
           Requires:       gtkmm30
-          Requires:       libhandy
           Requires:       libcurl
           Requires:       sqlite-libs
+          Requires:       openssl-libs
           Requires:       libsecret
+          Requires:       libhandy
           Requires:       opus
           Requires:       libsodium
           Requires:       spdlog
-          Requires:       openssl-libs
           Recommends:     fontconfig
 
           %description
@@ -384,9 +341,14 @@ jobs:
           %prep
           %autosetup -n %{name}-%{version}
 
+
           %build
           # Configure with CMake
-          %cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_SKIP_INSTALL_RPATH=ON -DCMAKE_EXE_LINKER_FLAGS="-lcrypto -lssl"
+          %cmake \
+              -DCMAKE_SKIP_INSTALL_RPATH=ON \
+              -DCMAKE_INSTALL_PREFIX=/usr \
+              -DCMAKE_BUILD_TYPE=Release \
+              %{nil}
 
           # Build
           %cmake_build
@@ -399,12 +361,24 @@ jobs:
           mkdir -p %{buildroot}/usr/share/applications
           mkdir -p %{buildroot}/usr/share/icons/hicolor/scalable/apps
 
+          # Install needed library and create symlink
+          install -Dm0755 %{_vpath_builddir}/subprojects/ixwebsocket/libixwebsocket.so.11.3.2 \
+            %{buildroot}%{_libdir}/libixwebsocket.so.11.3.2
+          ln -sf libixwebsocket.so.11.3.2 %{buildroot}%{_libdir}/libixwebsocket.so.11
+          ln -sf libixwebsocket.so.11.3.2 %{buildroot}%{_libdir}/libixwebsocket.so
+
+          install -Dm0755 %{_vpath_builddir}/subprojects/keychain/libkeychain.so \
+            %{buildroot}%{_libdir}/libkeychain.so
+
+          install -Dm0755 %{_vpath_builddir}/libqrcodegen.so \
+            %{buildroot}%{_libdir}/libqrcodegen.so
+
           # Install binary and create symlink
           install -Dm755 %{_vpath_builddir}/abaddon %{buildroot}/usr/share/abaddon/abaddon
           ln -s /usr/share/abaddon/abaddon %{buildroot}/usr/bin/abaddon
 
           # STRIP RPATH/RUNPATH (fixes security errors)
-          chrpath --delete %{buildroot}/usr/share/abaddon/abaddon || :
+          chrpath --delete %{buildroot}%{_datadir}/abaddon/abaddon || :
 
           # Install desktop file
           install -Dm644 res/desktop/io.github.uowuo.abaddon.desktop \
@@ -456,6 +430,11 @@ jobs:
           ## files on rpm
           %files
           %{_bindir}/abaddon
+          %{_libdir}/libixwebsocket.so.11.3.2
+          %{_libdir}/libixwebsocket.so.11
+          %{_libdir}/libixwebsocket.so
+          %{_libdir}/libkeychain.so
+          %{_libdir}/libqrcodegen.so
           %{_datadir}/abaddon/*
           %{_datadir}/applications/*.desktop
           %{_datadir}/icons/hicolor/*/apps/*
@@ -463,6 +442,7 @@ jobs:
           %doc README.md
           %license LICENSE
           EOF
+
 
       - name: Build RPM package
         run: |
