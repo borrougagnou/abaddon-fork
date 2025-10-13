@@ -357,6 +357,7 @@ jobs:
               -DCMAKE_SKIP_INSTALL_RPATH=ON \
               -DCMAKE_INSTALL_PREFIX=/usr \
               -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_EXE_LINKER_FLAGS="-lcrypto -lssl" \
               %{nil}
 
           # Build
