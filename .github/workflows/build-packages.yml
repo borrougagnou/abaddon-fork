@@ -326,8 +326,8 @@ jobs:
           BuildRequires:  libsodium-devel
           BuildRequires:  spdlog-devel
           BuildRequires:  fontconfig-devel
-          #BuildRequires:  libstdc++-devel
-          #BuildRequires:  libstdc++
+          BuildRequires:  libstdc++-devel
+          BuildRequires:  libstdc++
 
           # Runtime dependencies
           Requires:       gtkmm30
