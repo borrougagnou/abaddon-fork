@@ -254,11 +254,11 @@ jobs:
           submodules: 'recursive'
           fetch-depth: 0
 
-      - name: Build application
-        run: |
-          # CMAKE_INSTALL_PREFIX: https://github.com/uowuo/abaddon/commit/bf06e89d50e624e36dbbb6757260e5d0d758b4be
-          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
-          make -C build -j$(nproc)
+      #- name: Build application
+      #  run: |
+      #    # CMAKE_INSTALL_PREFIX: https://github.com/uowuo/abaddon/commit/bf06e89d50e624e36dbbb6757260e5d0d758b4be
+      #    cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+      #    make -C build -j$(nproc)
 
       - name: Disable git ownership check
         run: |
