@@ -216,24 +216,26 @@ jobs:
     steps:
       - name: Install RPM build dependencies
         run: |
-          dnf install -y    \
-            git             \
-            chrpath         \
-            pkg-config      \
-            rpm-build       \
-            rpmdevtools     \
-            gcc-c++         \
-            cmake           \
-            make            \
-            gtkmm30-devel   \
-            libcurl-devel   \
-            sqlite-devel    \
-            openssl-devel   \
-            json-devel      \
-            libsecret-devel \
-            libhandy-devel  \
-            opus-devel      \
-            libsodium-devel \
+          dnf install -y     \
+            git              \
+            chrpath          \
+            pkg-config       \
+            rpm-build        \
+            rpmdevtools      \
+            gcc-c++          \
+            libstdc++-static \
+            glibc-static     \
+            cmake            \
+            make             \
+            gtkmm30-devel    \
+            libcurl-devel    \
+            sqlite-devel     \
+            openssl-devel    \
+            json-devel       \
+            libsecret-devel  \
+            libhandy-devel   \
+            opus-devel       \
+            libsodium-devel  \
             spdlog-devel
 
       - name: Checkout repository
