@@ -1,48 +1,9 @@
-name: Build Debian and RPM Packages
+name: Test Build Packages
 
 on:
   push:
-    branches: [ main, master ]
-    tags:
-      - 'v*'
   pull_request:
-    branches: [ main, master ]
   workflow_dispatch:
-    inputs:
-      release_tag:
-        description: "Release tag (e.g., v1.2.3)"
-        required: true
-        type: string
-      create_release:
-        description: "Release type"
-        required: false
-        default: "none"
-        type: choice
-        options:
-          - none
-          - pre-release
-          - production
-          - draft
-
-   # inputs:
-   #   create_release:
-   #     description: 'Create Release if successful builds'
-   #     required: true
-   #     type: boolean
-   #     default: false
-   #   release_tag:
-   #     description: 'Release tag (e.g., v0.2.3)'
-   #     required: true
-   #     type: string
-   #   release_draft:
-   #     description: 'Create Draft if successful builds'
-   #     type: boolean
-   #     default: false
-   #   release_prerelease:
-   #     description: 'Create GitHub Pre-Release after successful builds'
-   #     type: boolean
-   #     default: false
-
 
 jobs:
   build-debian:
@@ -109,9 +70,7 @@ jobs:
       - name: Get version from git
         id: version
         run: |
-          if git describe --tags --exact-match 2>/dev/null; then
-            VERSION=${GITHUB_REF#refs/tags/v}
-          elif git describe --tags 2>/dev/null; then
+          if git describe --tags 2>/dev/null; then
             VERSION="$(git describe --tags --abbrev=0 | sed 's/^v//' | sed 's/-/./g').git$(git rev-parse --short HEAD)"
           else
             VERSION="0.0.0.git$(git rev-parse --short HEAD)"
@@ -221,7 +180,7 @@ jobs:
         with:
           name: debian-package
           path: abaddon_*.deb
-          retention-days: 30
+          retention-days: 8
 
 
   build-rpm:
@@ -270,11 +229,11 @@ jobs:
           submodules: 'recursive'
           fetch-depth: 0
 
-      #- name: Build application
-      #  run: |
-      #    # CMAKE_INSTALL_PREFIX: https://github.com/uowuo/abaddon/commit/bf06e89d50e624e36dbbb6757260e5d0d758b4be
-      #    cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
-      #    make -C build -j$(nproc)
+      - name: Build application
+        run: |
+          # CMAKE_INSTALL_PREFIX: https://github.com/uowuo/abaddon/commit/bf06e89d50e624e36dbbb6757260e5d0d758b4be
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+          make -C build -j$(nproc)
 
       - name: Disable git ownership check
         run: |
@@ -283,9 +242,7 @@ jobs:
       - name: Get version from git
         id: version
         run: |
-          if git describe --tags --exact-match 2>/dev/null; then
-            VERSION=${GITHUB_REF#refs/tags/v}
-          elif git describe --tags 2>/dev/null; then
+          if git describe --tags 2>/dev/null; then
             VERSION="$(git describe --tags --abbrev=0 | sed 's/^v//' | sed 's/-/./g').git$(git rev-parse --short HEAD)"
           else
             VERSION="0.0.0.git$(git rev-parse --short HEAD)"
@@ -477,7 +434,8 @@ jobs:
       - name: Copy RPM to workspace
         run: |
           mkdir -p rpms
-          find $HOME/rpmbuild/RPMS -type f \( -name '*debuginfo*.rpm' -o -name '*debugsource*.rpm' \) -exec rm -f {} \;
+          # not need to remove that for build process
+          #find $HOME/rpmbuild/RPMS -type f \( -name '*debuginfo*.rpm' -o -name '*debugsource*.rpm' \) -exec rm -f {} \;
           find $HOME/rpmbuild/RPMS -name "*.rpm" -exec cp {} rpms/ \;
 
       - name: Upload RPM package
@@ -485,48 +443,5 @@ jobs:
         with:
           name: rpm-package
           path: rpms/*.rpm
-          retention-days: 30
-
-
-  create-release:
-    name: Create Release
-    needs: [build-debian, build-rpm]
-    if: |
-      inputs.create_release != 'none' &&
-      success()
-
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Download Debian package from artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: debian-package
-          path: packages/
-
-      - name: Download RPM package from artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: rpm-package
-          path: packages/
-
-      - name: List packages
-        run: |
-          echo "Packages to be released:"
-          ls -lh packages/
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ inputs.release_tag }}
-          name: Release ${{ inputs.release_tag }}
-          draft: ${{ inputs.create_release == 'draft' }}
-          prerelease: ${{ inputs.create_release == 'pre-release' }}
-          generate_release_notes: true
-          target_commitish: ${{ github.sha }}
-          files: packages/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          retention-days: 8
 
