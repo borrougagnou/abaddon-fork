@@ -1,4 +1,8 @@
 ### Abaddon
+
+## I'll no longer participate in this project.
+
+
 ---
 Alternative Discord client made in C++ with GTK
 
